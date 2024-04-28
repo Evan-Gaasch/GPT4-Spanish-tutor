@@ -1,0 +1,92 @@
+#spanish tutor
+from openai import OpenAI
+import openai
+import os
+#set up path to files
+FilePath = "E:/Evan/Coding/code/AI/UserData"
+
+
+#api key
+client = OpenAI(
+    api_key = "API KEY HERE"
+)
+BHistory = [] #bot history of responses
+UHistory = [] #user history
+
+#login
+FirstName = input("What is your first name? Ensure proper capitalization ")
+LastName = input("What is your last name? Ensure proper capitalization ")
+UserName = "/" + FirstName+"_"+LastName
+print(UserName)
+
+
+#basic file finder
+if not (os.path.isfile(FilePath+UserName+".txt")):
+    print("New user. Initializing file")
+    Skill = input("What grade level do you think you are as a Spanish Speaker? ")
+    file = open((FilePath+UserName+".txt"), "x")
+    file.close()
+    file = open((FilePath+UserName+".txt"), "a")
+    file.write(" User Name:"+FirstName+" "+LastName)
+    file.write("Estimated grade/skill level: "+Skill)
+    file.close()
+    print("File initialized")
+    
+
+def chat():
+    
+
+    UserFile = open((FilePath+UserName+".txt"), "r")
+    instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little but only if it is necessary.The user's data, along with their spanish experience is ="+UserFile.read()
+    
+
+    #summary stuff
+    #tune instructions
+    
+    summaryInstructions = "You are an expert summarizer. Summarize the user's provided information that wasn't already recorded. The new information is provided by the user but make sure not to include any information that was already on the original file, here"+ UserFile.read()
+    summaryRequest = "User data:" + str(UHistory)
+    UserFile.close()
+    recordings = 1 #number times recorded
+    #append to data file
+    if len(UHistory) > (5/recordings):
+        recordings += 1
+        #summarize
+        print("Summarizing")
+        summary = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": str(summaryInstructions)},
+                    {"role": "user", "content": str(summaryRequest)}
+                ]
+            )
+        #write to file
+        UserFile = open((FilePath+UserName+".txt"), "a")
+        UserFile.write(" "+summary.choices[0].message.content)
+        UserFile.close()
+    
+    #actual chat
+    userinput = input("> ")
+    completion = client.chat.completions.create(
+                model="gpt-4-turbo",
+                messages=[
+                    {"role": "system", "content": str(instructions)},
+                    {"role":"user", "content" : str(UHistory)},
+                    {"role":"assistant", "content" : str(BHistory)},
+                    {"role": "user", "content": str(userinput)}
+                ]
+            )
+    UHistory.append(userinput)
+    print(completion.choices[0].message.content)
+    BHistory.append(completion.choices[0].message.content)
+
+    
+    
+    
+
+
+while True:
+    #if input("Do you want to continue conversation y/n ") == "y":
+    chat()
+        
+    #else:
+        #break

@@ -32,6 +32,8 @@ if UserMode == y:
     chosenModel = "gpt-4-turbo"
 else:
     chosenModel = "gpt-3.5-turbo" #defaults to cheaper model
+
+print(chosenModel) #test, remove later
     
 #basic file finder
 if not (os.path.isfile(FilePath+UserName+".txt")):
@@ -57,7 +59,7 @@ def chat():
     #summary stuff
     #tune instructions
     
-    summaryInstructions = "You are an expert summarizer. Summarize the user's provided information that wasn't already recorded. Focus on the user's goals and skills rather than exactly what they said. You are distilling what you learned about the user into this file, not just what the user said. The new information is provided by the user but make sure not to include any information that was already on the original file, here"+ UserFile.read()
+    summaryInstructions = "You are an expert summarizer. Summarize the user's provided information that wasn't already recorded. Focus on the user's goals, Spanish skills and preferences in conversation rather than exactly what they said, kind of like 'distilling the escence of the user' into this file. The new information is provided by the user but make sure not to include any information that was already on the original file, here"+ UserFile.read()
     summaryRequest = "User data:" + str(UHistory)
     UserFile.close()
     #number times recorded

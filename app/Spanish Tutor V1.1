@@ -1,4 +1,4 @@
-#spanish tutor
+    #spanish tutor
 from openai import OpenAI
 import openai
 import os
@@ -7,9 +7,6 @@ FilePath = "C:/Users/tmgaa/OneDrive/Documents/Evan"
 
 global next_recording
 next_recording = 5
-
-global chosenModel
-chosenModel = ""
 
 #api key
 client = OpenAI(
@@ -24,15 +21,7 @@ LastName = input("What is your last name? Ensure proper capitalization ")
 UserName = "/" + FirstName+"_"+LastName
 print(UserName)
 
-#initialization mode
-print("Would you like to initialize in pro mode (y/n)? Pro mode is more expensive but better")
 
-UserMode = input("(y/n):")
-if UserMode == y:
-    chosenModel = "gpt-4-turbo"
-else:
-    chosenModel = "gpt-3.5-turbo" #defaults to cheaper model
-    
 #basic file finder
 if not (os.path.isfile(FilePath+UserName+".txt")):
     print("New user. Initializing file")
@@ -48,7 +37,6 @@ if not (os.path.isfile(FilePath+UserName+".txt")):
 
 def chat():
     global next_recording
-    global chosenModel
     UserFile = open((FilePath+UserName+".txt"), "r")
     instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little but only if it is necessary.The user's data, along with their spanish experience is ="+UserFile.read()
     
@@ -80,7 +68,7 @@ def chat():
     #actual chat
     userinput = input(">")
     completion = client.chat.completions.create(
-                model=chosenModel,
+                model="gpt-4-turbo",
                 messages=[
                     {"role": "system", "content": str(instructions)},
                     {"role":"user", "content" : str(UHistory)},
@@ -91,19 +79,12 @@ def chat():
     UHistory.append(userinput)
     print(completion.choices[0].message.content)
     BHistory.append(completion.choices[0].message.content)
-    
-    #trim down bot and user history to reduce context cost to Openai
-    while len(UHistory)>5:  #tune this along with the summarization rate
-        UHistory.pop(0) #remove the first (oldest) item from the list because newest messages are added at the end
-        #iterates until the list is 5 messages long, or the summarziation window
-        print(len(UHistory)
-    
-    while len(BHistory) >5: #tune this along with the user summarization function
-        BHistory.pop(0) #remove oldest element
 
-        
+    
 
 while True:
+    #if input("Do you want to continue conversation y/n ") == "y":
     chat()
-
-
+        
+    #else:
+        #break

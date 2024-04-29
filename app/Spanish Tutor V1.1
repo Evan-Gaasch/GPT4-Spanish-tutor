@@ -45,18 +45,19 @@ if not (os.path.isfile(FilePath+UserName+".txt")):
     file.close()
     print("File initialized")
     
+print("Hi, how can I help you learn Spanish?")
 
 def chat():
     global next_recording
     global chosenModel
     UserFile = open((FilePath+UserName+".txt"), "r")
-    instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little but only if it is necessary.The user's data, along with their spanish experience is ="+UserFile.read()
+    instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little bit. Adapt to their language skills so that every word you type is at the level of the user, even instructions. The user's data, along with their spanish experience is ="+UserFile.read()
     
 
     #summary stuff
     #tune instructions
     
-    summaryInstructions = "You are an expert summarizer. Summarize the user's provided information that wasn't already recorded. The new information is provided by the user but make sure not to include any information that was already on the original file, here"+ UserFile.read()
+    summaryInstructions = "You are an expert summarizer. Summarize the user's provided information that wasn't already recorded. Focus on the user's goals and skills rather than exactly what they said. You are distilling what you learned about the user into this file, not just what the user said. The new information is provided by the user but make sure not to include any information that was already on the original file, here"+ UserFile.read()
     summaryRequest = "User data:" + str(UHistory)
     UserFile.close()
     #number times recorded

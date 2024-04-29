@@ -28,9 +28,12 @@ print(UserName)
 print("Would you like to initialize in pro mode (y/n)? Pro mode is more expensive but better")
 
 UserMode = input("(y/n):")
-if UserMode == y:
+if UserMode == "y":
     chosenModel = "gpt-4-turbo"
+elif UserMode == "n":
+    chosenModel = "gpt-3.5-turbo" #defaults to cheaper model
 else:
+    print("Invalid response. Defaulting to gpt-3")
     chosenModel = "gpt-3.5-turbo" #defaults to cheaper model
 
 print(chosenModel) #test, remove later

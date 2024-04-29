@@ -1,4 +1,5 @@
 #spanish tutor
+print("System initializing. Please wait")
 from openai import OpenAI
 import openai
 import os
@@ -57,7 +58,7 @@ def chat():
     global next_recording
     global chosenModel
     UserFile = open((FilePath+UserName+".txt"), "r")
-    instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little bit. Adapt to their language skills so that every word you type is at the level of the user, even the instructions you give.For beginning (before 1st or 2nd grade level) users, please type your instructions in English. The user's data, along with their spanish experience is ="+UserFile.read()
+    instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little bit. Adapt to their language skills so that every word you type is at the level of the user, even the instructions you give. Give instructions in English if you are asked. The user's data, along with their spanish experience is ="+UserFile.read()
     
     #summary stuff
     #tune instructions
@@ -102,7 +103,7 @@ def chat():
     while len(UHistory)>5:  #tune this along with the summarization rate
         UHistory.pop(0) #remove the first (oldest) item from the list because newest messages are added at the end
         #iterates until the list is 5 messages long, or the summarziation window
-        print(len(UHistory)
+        print(len(UHistory))
     
     while len(BHistory) >5: #tune this along with the user summarization function, does it need to be as high as the user sumarization function?
         BHistory.pop(0) #remove oldest element while the list is too long
@@ -111,6 +112,3 @@ def chat():
 
 while True:
     chat()
-    
-
-

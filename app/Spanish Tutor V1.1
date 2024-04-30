@@ -105,7 +105,7 @@ def chat():
         #iterates until the list is 5 messages long, or the summarziation window
         print(len(UHistory))
     
-    while len(BHistory) >5: #tune this along with the user summarization function, does it need to be as high as the user sumarization function?
+    while len(BHistory) >2: #tune this along with the user summarization function, does it need to be as high as the user sumarization function?
         BHistory.pop(0) #remove oldest element while the list is too long
     
         

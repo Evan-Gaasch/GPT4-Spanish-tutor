@@ -1,16 +1,40 @@
 #spanish tutor
 print("System initializing. Please wait")
+from flask import Flask
 from openai import OpenAI
 import openai
 import os
 #set up path to files
-FilePath = "C:/Users/tmgaa/OneDrive/Documents/Evan"
+FilePath = "C:/Users/tmgaa/OneDrive/Documents/Evan" #will be a web directory later when hosting on server
 
 global next_recording
 next_recording = 5
 
 global chosenModel
 chosenModel = ""
+
+global messages
+messages = []
+
+global FirstName
+
+#set up app init
+app = Flask(__name__)
+@app.route('/') #routes to http://localhost:5000/
+
+#set up main update loop for web app
+def display():
+    global messages
+    global FirstName
+
+    #display user's name
+    username = f'<p><h1>Hello, {FirstName}!<h1><p>
+    userinput, output = chat()
+    messages.append(userinput)
+    messages.append(output) #display all past messages
+    print(messages)
+    return username + str(messages)
+
 
 #api key
 client = OpenAI(
@@ -107,8 +131,9 @@ def chat():
     
     while len(BHistory) >5: #tune this along with the user summarization function, does it need to be as high as the user sumarization function?
         BHistory.pop(0) #remove oldest element while the list is too long
-    
         
+    return(userinput, completion.choices[0].message.content)
 
-while True:
-    chat()
+#run app
+if __name__ == '__main__':
+    app.run(debug = False)

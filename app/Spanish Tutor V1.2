@@ -29,7 +29,7 @@ def display():
 
     #display user's name
     username = f'<p><h1>Hello, {FirstName}!</h1></p>'
-    userinput, output,UHistory = chat()
+    userinput, output,UHistory,suggestions = chat()
     messages.append(userinput)
     messages.append(output) #add returned messages to a back and forth list of inputs and outputs
 
@@ -42,8 +42,9 @@ def display():
         else:
             chat_messages += f'<p>Bot: {messages[i]} </p>' #indicates that it is a bot message
 
-    
-    return ((f'<center>username</center>') + (f'<center>chat_messages</center>'))
+    #format messages
+    chat_messages = f'<body><body style="background-color:MediumSeaGreen;"><center>{chat_messages}</center></body> <body><center>Suggestions: {suggestions}</body><center>' #center format with suggestions at the bottom for what to type
+    return ((f'<center>username</center>') + chat_messages)
 
 
 #api key
@@ -141,8 +142,18 @@ def chat():
     
     while len(BHistory) >5: #tune this along with the user summarization function, does it need to be as high as the user sumarization function?
         BHistory.pop(0) #remove oldest element while the list is too long
-        
-    return(userinput, completion.choices[0].message.content)
+
+    #suggested outputs
+    suggester_instructions = "Succinctly suggest 3 ideas for how to reply to the given text, separated by commas"
+    last_bot_message = BHistory.reverse()[0] #last element of list, probably buggy
+    suggestion = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": str(suggested_instructions)},
+                    {"role": "user", "content": str(last_bot_message)}
+                ]
+            )
+    return(userinput, completion.choices[0].message.content,UHistory,suggestion.choices[0].message.content)
 
 #run app
 if __name__ == '__main__':

@@ -2,10 +2,11 @@
 
 print("System initializing. Please wait")
 from flask import Flask, render_template
-from openai import OpenAI, openai
+from openai import OpenAI
+import openai
 import os
 #set up path to files
-FilePath = "C:/Users/tmgaa/OneDrive/Documents/Evan" #will be a web directory later when hosting on server
+FilePath = "P:/" #will be a web directory later when hosting on server
 
 global next_recording
 next_recording = 5
@@ -20,7 +21,7 @@ global FirstName
 
 #set up app init
 app = Flask(__name__)
-@app.route('/') #routes to http://localhost:5000/
+@app.route("/") #routes to http://localhost:5000/ or 127.0.0.1:5000/main
 
 #set up main update loop for web app
 def display():

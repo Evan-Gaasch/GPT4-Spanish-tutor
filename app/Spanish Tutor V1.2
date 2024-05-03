@@ -1,0 +1,148 @@
+#spanish tutor
+print("System initializing. Please wait")
+from flask import Flask, render_template
+from openai import OpenAI, openai
+import os
+#set up path to files
+FilePath = "C:/Users/tmgaa/OneDrive/Documents/Evan" #will be a web directory later when hosting on server
+
+global next_recording
+next_recording = 5
+
+global chosenModel
+chosenModel = ""
+
+global messages
+messages = []
+
+global FirstName
+
+#set up app init
+app = Flask(__name__)
+@app.route('/') #routes to http://localhost:5000/
+
+#set up main update loop for web app
+def display():
+    global messages
+    global FirstName
+
+    #display user's name
+    username = f'<p><h1>Hello, {FirstName}!</h1></p>
+    userinput, output,UHistory = chat()
+    messages.append(userinput)
+    messages.append(output) #add returned messages to a back and forth list of inputs and outputs
+
+    for i in range(0,len(messages)):
+        #if bot, add the words: 'bot' in front
+        if messages[i] in UHistory:
+            chat_messages += f'<p> {messages[i]} </p>'#add formatted string to list of displayed messages
+            print("User")
+            
+        else:
+            chat_messages += f'<p>Bot: {messages[i]} </p>' #indicates that it is a bot message
+
+    
+    return (<center>username</center> + <center>chat_messages</center>)
+
+
+#api key
+client = OpenAI(
+    api_key = "API KEY HERE"
+)
+BHistory = [] #bot history of responses
+UHistory = [] #user history
+
+#login
+FirstName = input("What is your first name? Ensure proper capitalization ")
+LastName = input("What is your last name? Ensure proper capitalization ")
+UserName = "/" + FirstName+"_"+LastName
+#print(UserName)
+
+#initialization mode
+print("Would you like to initialize in pro mode (y/n)? Pro mode is more expensive but better")
+
+UserMode = input("(y/n):")
+if UserMode == "y":
+    chosenModel = "gpt-4-turbo"
+elif UserMode == "n":
+    chosenModel = "gpt-3.5-turbo" #defaults to cheaper model
+else:
+    print("Invalid response. Defaulting to 'gpt-3.5-turbo', the cheaper option.")
+    chosenModel = "gpt-3.5-turbo" #defaults to cheaper model
+
+print(chosenModel) #test, remove later
+ 
+#basic file finder
+if not (os.path.isfile(FilePath+UserName+".txt")):
+    print("New user. Initializing file")
+    Skill = input("What grade level do you think you are as a Spanish Speaker? ")
+    file = open((FilePath+UserName+".txt"), "x")
+    file.close()
+    file = open((FilePath+UserName+".txt"), "a")
+    file.write(" User Name:"+FirstName+" "+LastName)
+    file.write("Estimated grade/skill level: "+Skill)
+    file.close()
+    print("File initialized")
+
+print("Quick note: Do not click 'enter' unless you want to submit what you have written. I am working on a patch for this so you can do multi-line inputs")
+print("Hi, how can I help you learn Spanish? Como puedo ayudarte aprender Espanol?")
+
+def chat():
+    global next_recording
+    global chosenModel
+    UserFile = open((FilePath+UserName+".txt"), "r")
+    instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little bit. Adapt to their language skills so that every word you type is at the level of the user, even the instructions you give. Give instructions in English if you are asked. The user's data, along with their spanish experience is ="+UserFile.read()
+    
+    #summary stuff
+    #tune instructions
+    
+    summaryInstructions = "You are an expert summarizer. Summarize the user's provided information that wasn't already recorded. Focus on the user's goals, Spanish skills and preferences in conversation rather than exactly what they said, kind of like 'distilling the escence of the user' into this file. The new information is provided by the user but make sure not to include any information that was already on the original file, here"+ UserFile.read()
+    summaryRequest = "User data:" + str(UHistory)
+    UserFile.close()
+    
+    #append to data file
+    if len(UHistory) > (next_recording):
+        next_recording += 5
+        #summarize
+        print("Summarizing")
+        summary = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": str(summaryInstructions)},
+                    {"role": "user", "content": str(summaryRequest)}
+                ]
+            )
+        #write to file
+        UserFile = open((FilePath+UserName+".txt"), "a")
+        UserFile.write(" "+summary.choices[0].message.content)
+        UserFile.close()
+    
+    #actual chat
+    userinput = input(">")
+    completion = client.chat.completions.create(
+                model=chosenModel,
+                messages=[
+                    {"role": "system", "content": str(instructions)},
+                    {"role":"user", "content" : str(UHistory)},
+                    {"role":"assistant", "content" : str(BHistory)},
+                    {"role": "user", "content": str(userinput)}
+                ]
+            )
+    UHistory.append(userinput)
+    print(completion.choices[0].message.content)
+    BHistory.append(completion.choices[0].message.content)
+    
+    #trim down bot and user history to reduce context cost to Openai
+    while len(UHistory)>5:  #tune this along with the summarization rate
+        UHistory.pop(0) #remove the first (oldest) item from the list because newest messages are added at the end
+        #iterates until the list is 5 messages long, or the summarziation window
+        print(len(UHistory))
+    
+    while len(BHistory) >5: #tune this along with the user summarization function, does it need to be as high as the user sumarization function?
+        BHistory.pop(0) #remove oldest element while the list is too long
+        
+    return(userinput, completion.choices[0].message.content)
+
+#run app
+if __name__ == '__main__':
+    app.run(debug = False)

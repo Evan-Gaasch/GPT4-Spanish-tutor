@@ -1,12 +1,14 @@
 #spanish tutor
 
 print("System initializing. Please wait")
-from flask import Flask, render_template
+from flask import Flask, request, render_template
 from openai import OpenAI
 import openai
 import os
+import time
 #set up path to files
-FilePath = "P:/" #will be a web directory later when hosting on server
+global FilePath
+FilePath = "C:/Users/tmgaa/OneDrive/Documents/Evan" #will be a web directory later when hosting on server
 
 global next_recording
 next_recording = 5
@@ -18,40 +20,14 @@ global messages
 messages = []
 
 global FirstName
-
-#set up app init
-app = Flask(__name__)
-@app.route("/") #routes to http://localhost:5000/ or 127.0.0.1:5000/main
-
-#set up main update loop for web app
-def display():
-    global messages
-    global FirstName
-
-    #display user's name
-    username = f'<p><h1>Hello, {FirstName}!</h1></p>'
-    userinput, output,UHistory,suggestions = chat()
-    messages.append(userinput)
-    messages.append(output) #add returned messages to a back and forth list of inputs and outputs
-
-    for i in range(0,len(messages)):
-        #if bot, add the words: 'bot' in front
-        if messages[i] in UHistory:
-            chat_messages += f'<p> {messages[i]} </p>'#add formatted string to list of displayed messages
-            print("User")
-            
-        else:
-            chat_messages += f'<p>Bot: {messages[i]} </p>' #indicates that it is a bot message
-
-    #format messages
-    chat_messages = f'<body><body style="background-color:MediumSeaGreen;"><center>{chat_messages}</center></body> <body><center>Suggestions: {suggestions}</body><center>' #center format with suggestions at the bottom for what to type
-    return ((f'<center>username</center>') + chat_messages)
-
+global UserName
 
 #api key
 client = OpenAI(
-    api_key = "API KEY HERE"
+    api_key = ""
 )
+global UHistory
+global BHistory
 BHistory = [] #bot history of responses
 UHistory = [] #user history
 
@@ -93,6 +69,11 @@ print("Hi, how can I help you learn Spanish? Como puedo ayudarte aprender Espano
 def chat():
     global next_recording
     global chosenModel
+    global UserName
+    global UHistory
+    global BHistory
+    global FilePath
+    
     UserFile = open((FilePath+UserName+".txt"), "r")
     instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little bit. Adapt to their language skills so that every word you type is at the level of the user, even the instructions you give. Give instructions in English if you are asked. The user's data, along with their spanish experience is ="+UserFile.read()
     
@@ -121,7 +102,7 @@ def chat():
         UserFile.close()
     
     #actual chat
-    userinput = input(">")
+    userinput = get_input()
     completion = client.chat.completions.create(
                 model=chosenModel,
                 messages=[
@@ -146,16 +127,59 @@ def chat():
 
     #suggested outputs
     suggester_instructions = "Succinctly suggest 3 ideas for how to reply to the given text, separated by commas"
-    last_bot_message = BHistory.reverse()[0] #last element of list, probably buggy
+    last_bot_message = BHistory[0] #last element of list, probably buggy
     suggestion = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
-                    {"role": "system", "content": str(suggested_instructions)},
+                    {"role": "system", "content": str(suggester_instructions)},
                     {"role": "user", "content": str(last_bot_message)}
                 ]
             )
     return(userinput, completion.choices[0].message.content,UHistory,suggestion.choices[0].message.content)
+    #return("hi")
+
+
+#set up app init
+app = Flask(__name__)
+
+ #routes to http://localhost:5000/ or 127.0.0.1:5000/main
+def test(): #set up main loop for web app
+    global messages
+    #global FirstName
+
+    chat_messages = ""
+
+    #display user's name
+    #username = f'<p><h1>Hello, {FirstName}!</h1></p>'
+    while True:
+
+        userinput, output,UHistory,suggestions = chat()
+        print(userinput, output)
+    #chat()
+        messages.append(userinput)
+        messages.append(output) #add returned messages to a back and forth list of inputs and outputs
+        print(messages)
+
+        for i in range (0,len(messages)):
+            chat_messages +=( f'<p>{messages[i]}</p>')
+    
+    
+
+        #format messages
+        chat_messages = f'<body><body style="background-color:MediumSeaGreen;"><center>{chat_messages}</center></body> <body><center>Suggestions: {suggestions}</body></center>' #center format with suggestions at the bottom for what to type
+        print(chat_messages)
+        return (f'<meta http-equiv="refresh" content="1" />{chat_messages}<input type="text" name="text" id="text"></input>')
+    #return 'Help!'
+
+#set up post app
+@app.route("/", methods=['POST'])
+def get_input():
+    assert request.path == '/'
+    assert request.method == 'POST'
+    text = request.form['text']
+    return text
 
 #run app
 if __name__ == '__main__':
-    app.run(debug = False)
+    app.run(port=8080,debug = False)
+    #time.sleep(1)

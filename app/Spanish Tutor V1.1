@@ -14,7 +14,7 @@ chosenModel = ""
 
 #api key
 client = OpenAI(
-    api_key = "API KEY HERE"
+    api_key = "API KEY"
 )
 BHistory = [] #bot history of responses
 UHistory = [] #user history
@@ -107,7 +107,21 @@ def chat():
     
     while len(BHistory) >2: #tune this along with the user summarization function, does it need to be as high as the user sumarization function?
         BHistory.pop(0) #remove oldest element while the list is too long
-    
+
+    #suggested outputs
+    suggester_instructions = "Succinctly suggest 3 ideas for how to reply to the given text, separated by commas. Make all suggestions focused on how to learn Spanish"
+    last_bot_message = BHistory[0] #last element of list, probably buggy
+    suggestion = client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": str(suggester_instructions)},
+                    {"role": "user", "content": str(last_bot_message)}
+                ]
+            )
+    print()
+    print("Suggestions:")
+    print(suggestion.choices[0].message.content)
+    print()
         
 
 while True:

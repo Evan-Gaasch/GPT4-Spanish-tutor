@@ -18,7 +18,7 @@ chosenModel = ""
 
 #api key
 client = OpenAI(
-    api_key = "API KEY HERE"
+    api_key = "API KEY"
 )
 BHistory = [] #bot history of responses
 UHistory = [] #user history
@@ -55,8 +55,8 @@ if not (os.path.isfile(FilePath+UserName+".txt")):
     file.close()
     print("File initialized")
 
-print("Quick note: Do not click 'enter' unless you want to submit what you have written. I am working on a patch for this so you can do multi-line inputs")
-print("Hi, how can I help you learn Spanish? Como puedo ayudarte aprender Espanol?")
+#print("Quick note: Do not click 'enter' unless you want to submit what you have written. I am working on a patch for this so you can do multi-line inputs")
+
 
 def chat():
     global next_recording
@@ -114,34 +114,56 @@ def chat():
         BHistory.pop(0) #remove oldest element while the list is too long
 
     #suggested outputs
+    suggestions(BHistory)
+
+#suggestions subroutine
+def suggestions(BHistory):
     suggester_instructions = "Succinctly suggest 3 replies a user could make to the given text, separated by commas. Make all suggestions focused on how to learn Spanish"
-    last_bot_message = BHistory[0] #last element of list, probably buggy
+    last_bot_message = BHistory[(len(BHistory)-1)] #last element of list, probably buggy
     suggestion = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[
                     {"role": "system", "content": str(suggester_instructions)},
                     {"role": "user", "content": str(last_bot_message)}
                 ]
-            )
+    )
     print()
     print("Suggestions:")
     print(suggestion.choices[0].message.content)
     print()
     voice = input("Do you want to have the bot's output transcribed into audio? (y/n)")
     if voice == "y":
-        #start text to speech
         speech_file_path = (FilePath+"/speech.mp3")
         response = client.audio.speech.create(
-          model="tts-1",
-          voice="alloy",
-          input=str(completion.choices[0].message.content)
+            model="tts-1",
+            voice="alloy",
+            input=str(last_bot_message)
         )
 
         response.stream_to_file(speech_file_path)
         playsound(speech_file_path)
         while input("Do you want to repeat? (y/n)") == "y": #repeat until user doesn't want to
             playsound(speech_file_path)
-        
+
+    
+#initialize input: (to prevent "cold start")
+UserFile = open((FilePath+UserName+".txt"), "r")
+init_instructions = "You are a helpful Spanish teacher named 'Not Duo' that delivers customized instructions on how to learn Spanish. Correct any and all gramatical mistakes from the user kindly and explain in detail why they are wrong. Lead the conversation to where you think the user needs to go to learn best but make sure to correct any and all grammatical mistakes. Adapt to the knowledge level of the user, as many users barely know Spanish. If they barely know Spanish, you can speak in English a little bit. Adapt to their language skills so that every word you type is at the level of the user, even the instructions you give. Give instructions in English if you are asked. The user's data, along with their spanish experience is ="+UserFile.read()
+    
+initial_completion = client.chat.completions.create(
+    model=chosenModel,
+    messages=[
+        {"role": "system", "content": str(init_instructions)},
+        {"role": "user", "content": str("Hi! Here is some information about me to get us started:"+UserFile.read())}
+    ]
+)
+#close the opened file
+UserFile.close()
+BHistory.append(initial_completion.choices[0].message.content)
+print(initial_completion.choices[0].message.content)
+
+#summarization and audio, also to prevent "cold start", could work these two statements into the chat subroutine?
+suggestions(BHistory)
 
 while True:
     chat()

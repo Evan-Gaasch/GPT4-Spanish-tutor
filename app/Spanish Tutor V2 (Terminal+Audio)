@@ -115,9 +115,6 @@ def chat():
 
     #suggested outputs
     suggestions(BHistory)
-    voice = input("Do you want to have the bot's output transcribed into audio? (y/n)")
-    if voice == "y":
-        voice(FilePath,completion.choices[0].message.content)
 
 #suggestions subroutine
 def suggestions(BHistory):
@@ -134,17 +131,19 @@ def suggestions(BHistory):
     print("Suggestions:")
     print(suggestion.choices[0].message.content)
     print()
-    speech_file_path = (FilePath+"/speech.mp3")
-    response = client.audio.speech.create(
-        model="tts-1",
-        voice="alloy",
-        input=str(completion.choices[0].message.content)
-    )
+    voice = input("Do you want to have the bot's output transcribed into audio? (y/n)")
+    if voice == "y":
+        speech_file_path = (FilePath+"/speech.mp3")
+        response = client.audio.speech.create(
+            model="tts-1",
+            voice="alloy",
+            input=str(last_bot_message)
+        )
 
-    response.stream_to_file(speech_file_path)
-    playsound(speech_file_path)
-    while input("Do you want to repeat? (y/n)") == "y": #repeat until user doesn't want to
+        response.stream_to_file(speech_file_path)
         playsound(speech_file_path)
+        while input("Do you want to repeat? (y/n)") == "y": #repeat until user doesn't want to
+            playsound(speech_file_path)
 
     
 #initialize input: (to prevent "cold start")
@@ -165,9 +164,6 @@ print(initial_completion.choices[0].message.content)
 
 #summarization and audio, also to prevent "cold start", could work these two statements into the chat subroutine?
 suggestions(BHistory)
-initial_completed = initial_completion.choices[0].message.content
-voice(FilePath,(initial_completed))
-
 
 while True:
     chat()

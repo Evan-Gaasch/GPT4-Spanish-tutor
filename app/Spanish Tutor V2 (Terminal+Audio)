@@ -18,7 +18,7 @@ chosenModel = ""
 
 #api key
 client = OpenAI(
-    api_key = "API KEY"
+    api_key = "API KEY HERE"
 )
 BHistory = [] #bot history of responses
 UHistory = [] #user history
@@ -34,7 +34,7 @@ print("Would you like to initialize in pro mode (y/n)? Pro mode is more expensiv
 
 UserMode = input("(y/n):")
 if UserMode == "y":
-    chosenModel = "gpt-4-turbo"
+    chosenModel = "gpt-4o"
 elif UserMode == "n":
     chosenModel = "gpt-3.5-turbo" #defaults to cheaper model
 else:
